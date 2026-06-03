@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secure IPC - Privacy Governance & Compliance Console</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- FontAwesome icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="index.css">
+</head>
+<body>
+    <!-- Background Glows -->
+    <div class="glow-bg-1"></div>
+    <div class="glow-bg-2"></div>
+
+    <!-- Login Security Gate -->
+    <div id="login-overlay" class="overlay">
+        <div class="glass-card login-card animate-fade-in">
+            <div class="brand-header">
+                <i class="fa-solid fa-shield-halved brand-logo text-cyan"></i>
+                <h2>SECURE<span>IPC</span></h2>
+            </div>
+            <p class="brand-subtitle">Privacy Governance & Threat Compliance Platform</p>
+            
+            <form id="login-form">
+                <div class="input-block">
+                    <label for="username"><i class="fa-solid fa-user-shield"></i> Identity Descriptor</label>
+                    <input type="text" id="username" placeholder="Process / User Username" required autocomplete="off">
+                </div>
+                <div class="input-block">
+                    <label for="password"><i class="fa-solid fa-key"></i> Passphrase</label>
+                    <input type="password" id="password" placeholder="Process / User Password" required>
+                </div>
+                <div id="login-error" class="error-msg hidden">
+                    <i class="fa-solid fa-circle-exclamation"></i> RSA Signature verification failed!
+                </div>
+                <button type="submit" class="btn btn-primary btn-block">
+                    <span>Verify RSA Certificate</span>
+                    <i class="fa-solid fa-fingerprint"></i>
+                </button>
+            </form>
+            
+            <div class="auth-hint-box">
+                <p>Authorized Process Registries:</p>
+                <code>Process_Admin / admin@nexus (Admin Role)</code>
+                <code>Process_Auditor / auditor@nexus (Auditor Role)</code>
+                <code>Process_User / user@001 (User Role)</code>
+            </div>
+        </div>
+    </div>
+
+    <!-- App Container -->
+    <div id="app-container" class="hidden">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="header-left">
+                <i class="fa-solid fa-shield-halved brand-logo text-cyan"></i>
+                <h1>SECURE<span>IPC</span></h1>
+                <span class="badge badge-cyan">PRIVACY EDITION</span>
+            </div>
+            <nav class="header-nav">
+                <button class="nav-btn active" data-pane="dashboard"><i class="fa-solid fa-chart-line"></i> Dashboard</button>
+                <button class="nav-btn" data-pane="visualizer"><i class="fa-solid fa-network-wired"></i> IPC Simulator</button>
+                <button class="nav-btn" data-pane="dsr"><i class="fa-solid fa-user-lock"></i> DSR Portal</button>
+                <button class="nav-btn" data-pane="compliance"><i class="fa-solid fa-gavel"></i> Compliance & Info</button>
+            </nav>
+            <div class="header-right">
+                <span class="user-pill"><i class="fa-solid fa-circle-user text-cyan"></i> <span id="auth-username">Process_Admin</span></span>
+                <span id="role-pill" class="role-badge badge-admin">Admin</span>
+                <button id="logout-btn" class="btn btn-sm btn-secondary"><i class="fa-solid fa-right-from-bracket"></i></button>
+            </div>
+        </header>
+
+        <!-- Main Body -->
+        <main class="app-main">
+            
+            <!-- PANE 1: Dashboard -->
+            <section id="pane-dashboard" class="pane-content active">
+                <!-- Top Row: Metrics Grid -->
+                <div class="metrics-grid">
+                    <div class="metric-card">
+                        <div class="metric-icon bg-cyan-dim"><i class="fa-solid fa-circle-nodes text-cyan"></i></div>
+                        <div class="metric-details">
+                            <span class="metric-label">Secure IPC Streams</span>
+                            <span class="metric-value" id="metric-comms">0</span>
+                        </div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-icon bg-emerald-dim"><i class="fa-solid fa-signature text-emerald"></i></div>
+                        <div class="metric-details">
+                            <span class="metric-label">Consent Approvals</span>
+                            <span class="metric-value text-emerald" id="metric-consent-rate">100%</span>
+                        </div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-icon bg-amber-dim"><i class="fa-solid fa-shield-virus text-amber"></i></div>
+                        <div class="metric-details">
+                            <span class="metric-label">Failed Auth Attempts</span>
+                            <span class="metric-value text-amber" id="metric-failed-auth">0</span>
+                        </div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-icon bg-pink-dim"><i class="fa-solid fa-circle-exclamation text-pink"></i></div>
+                        <div class="metric-details">
+                            <span class="metric-label">Privacy Incidents</span>
+                            <span class="metric-value text-pink" id="metric-incidents">0</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Middle Grid: Charts & Consent Settings -->
+                <div class="dashboard-middle-grid">
+                    <!-- Left: Real-time Governance Registry -->
+                    <div class="glass-card">
+                        <div class="card-header">
+                            <h3><i class="fa-solid fa-users-gear text-cyan"></i> Consent Management Registry</h3>
+                            <button class="btn btn-secondary btn-sm" id="btn-add-subject" onclick="addNewSubject()"><i class="fa-solid fa-user-plus"></i> Add Subject</button>
+                        </div>
+                        <p class="card-desc">DPDPA-inspired Consent Registry. Payloads referencing revoked Subject IDs are blocked at the IPC boundaries.</p>
+                        <div class="table-container">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Subject ID</th>
+                                        <th>Data Subject Name</th>
+                                        <th>Consent Status</th>
+                                        <th>Authorized Purposes</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="consent-table-body">
+                                    <!-- Populated by JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Right: Role Control & Compliance Quick Metrics -->
+                    <div class="glass-card">
+                        <h3><i class="fa-solid fa-user-shield text-pink"></i> Session Context & RBAC</h3>
+                        <p class="card-desc">Modify client process role to inspect Least Privilege Access & Data Minimization behaviors during IPC serialization.</p>
+                        
+                        <div class="role-selector-box">
+                            <label class="control-label">Switch Current Role Context</label>
+                            <div class="role-buttons">
+                                <button class="btn btn-secondary role-select-btn active" id="btn-role-admin" onclick="changeRoleContext('Admin')"><i class="fa-solid fa-user-gear"></i> Admin</button>
+                                <button class="btn btn-secondary role-select-btn" id="btn-role-auditor" onclick="changeRoleContext('Auditor')"><i class="fa-solid fa-clipboard-check"></i> Auditor</button>
+                                <button class="btn btn-secondary role-select-btn" id="btn-role-user" onclick="changeRoleContext('User')"><i class="fa-solid fa-user"></i> User</button>
+                            </div>
+                        </div>
+
+                        <div class="quick-status-list">
+                            <div class="status-item">
+                                <span>GDPR compliance score</span>
+                                <span class="badge badge-emerald">100% compliant</span>
+                            </div>
+                            <div class="status-item">
+                                <span>DPDPA compliance score</span>
+                                <span class="badge badge-emerald">100% compliant</span>
+                            </div>
+                            <div class="status-item">
+                                <span>Active Retention Policy</span>
+                                <span class="badge badge-cyan">30 days retention</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- PANE 2: Visualizer (IPC Simulator) -->
+            <section id="pane-visualizer" class="pane-content">
+                <div class="visualizer-layout">
+                    <!-- Control Panel (Left) -->
+                    <div class="glass-card visualizer-controls">
+                        <h3><i class="fa-solid fa-sliders text-cyan"></i> IPC Transmission Controller</h3>
+                        
+                        <!-- Technology Select -->
+                        <div class="input-block">
+                            <label class="control-label">IPC Technology Channel</label>
+                            <div class="ipc-tech-grid">
+                                <button class="tech-card active" id="tech-shm" onclick="selectTech('shm')">
+                                    <i class="fa-solid fa-memory"></i>
+                                    <span>Shared Memory</span>
+                                </button>
+                                <button class="tech-card" id="tech-pipe" onclick="selectTech('pipe')">
+                                    <i class="fa-solid fa-arrow-right-arrow-left"></i>
+                                    <span>Named Pipe</span>
+                                </button>
+                                <button class="tech-card" id="tech-mq" onclick="selectTech('mq')">
+                                    <i class="fa-solid fa-list-ol"></i>
+                                    <span>Message Queue</span>
+                                </button>
+                                <button class="tech-card" id="tech-socket" onclick="selectTech('socket')">
+                                    <i class="fa-solid fa-ethernet"></i>
+                                    <span>Socket TCP</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Data Classification -->
+                        <div class="input-block">
+                            <label class="control-label" for="sim-classification">Data Classification Level</label>
+                            <select id="sim-classification" class="select-field" onchange="updateClassificationHint()">
+                                <option value="Public">Public (No privacy controls)</option>
+                                <option value="Internal" selected>Internal (Basic process segregation)</option>
+                                <option value="Confidential">Confidential (PII masking for standard users)</option>
+                                <option value="Restricted">Restricted (Blocked for users; Pseudonymized for auditors)</option>
+                            </select>
+                            <small class="hint-text" id="class-hint">Internal data is limited to corporate processing and contains no high-risk metrics.</small>
+                        </div>
+
+                        <!-- Data Subject ID -->
+                        <div class="input-block">
+                            <label class="control-label" for="sim-subject">Data Subject ID Reference</label>
+                            <select id="sim-subject" class="select-field">
+                                <!-- Populated dynamically -->
+                            </select>
+                        </div>
+
+                        <!-- Payloads & Key -->
+                        <div class="input-block">
+                            <label class="control-label" for="sim-payload">Message Payload (PII data)</label>
+                            <input type="text" id="sim-payload" class="input-field" value="User Account: John Doe, Email: john.doe@demandbase.com" placeholder="Payload content...">
+                        </div>
+
+                        <div class="input-block">
+                            <label class="control-label" for="sim-aes-key">AES-256 Symmetric Key</label>
+                            <input type="text" id="sim-aes-key" class="input-field" value="DemandbaseKey2026@">
+                        </div>
+
+                        <div class="toggle-control-list">
+                            <div class="toggle-row">
+                                <div class="toggle-text">
+                                    <span>Verify Consent before Transfer</span>
+                                    <small>Enforce Privacy-by-Design pre-check</small>
+                                </div>
+                                <label class="switch-toggle">
+                                    <input type="checkbox" id="chk-verify-consent" checked>
+                                    <span class="switch-slider"></span>
+                                </label>
+                            </div>
+                            <div class="toggle-row">
+                                <div class="toggle-text">
+                                    <span>Eavesdropper Interception</span>
+                                    <small>Simulate packet capture (MITM)</small>
+                                </div>
+                                <label class="switch-toggle">
+                                    <input type="checkbox" id="chk-eavesdrop" onchange="toggleEavesdropVisual()">
+                                    <span class="switch-slider"></span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <button class="btn btn-primary btn-block btn-lg" onclick="triggerSimulation()"><i class="fa-solid fa-paper-plane"></i> Execute Secure Transfer</button>
+                    </div>
+
+                    <!-- Visual Execution Area (Right) -->
+                    <div class="visualizer-execution">
+                        <!-- Top Animation Viewport -->
+                        <div class="glass-card animation-viewport">
+                            <div class="viewport-header">
+                                <h3><i class="fa-solid fa-diagram-project text-cyan"></i> Runtime Execution Flow</h3>
+                                <span class="badge" id="sim-state-badge">IDLE</span>
+                            </div>
+
+                            <div class="simulation-stage">
+                                <!-- Process nodes -->
+                                <div class="sim-nodes-row">
+                                    <div class="sim-node" id="sim-node-sender">
+                                        <i class="fa-solid fa-gears text-cyan"></i>
+                                        <h4>Process A</h4>
+                                        <span class="role-badge badge-admin">Sender</span>
+                                        <div class="sim-bubble" id="bubble-sender">Hello</div>
+                                    </div>
+
+                                    <div class="sim-node interceptor hidden" id="sim-node-adversary">
+                                        <i class="fa-solid fa-user-secret text-pink"></i>
+                                        <h4>Process C</h4>
+                                        <span class="role-badge badge-restricted">Adversary</span>
+                                        <div class="sim-bubble" id="bubble-adversary">Intercepted!</div>
+                                    </div>
+
+                                    <div class="sim-node" id="sim-node-receiver">
+                                        <i class="fa-solid fa-server text-emerald"></i>
+                                        <h4>Process B</h4>
+                                        <span class="role-badge badge-auditor">Receiver</span>
+                                        <div class="sim-bubble" id="bubble-receiver">Received</div>
+                                    </div>
+                                </div>
+
+                                <!-- IPC Shared Memory Grid visualizer -->
+                                <div class="stage-channel-visualizer" id="stage-visualizer-shm">
+                                    <div class="stage-channel-header">
+                                        <span><i class="fa-solid fa-memory"></i> RAM Buffer Segment: <code>Local\SecureIPC_SharedMemory</code></span>
+                                        <span class="badge badge-emerald" id="shm-lock-badge">MUTEX UNLOCKED</span>
+                                    </div>
+                                    <div class="stage-shm-grid" id="stage-shm-grid">
+                                        <!-- Generated dynamically -->
+                                    </div>
+                                </div>
+
+                                <!-- IPC Pipe / Queue / Socket visualizer -->
+                                <div class="stage-channel-visualizer hidden" id="stage-visualizer-conduit">
+                                    <div class="stage-channel-header">
+                                        <span id="conduit-channel-title"><i class="fa-solid fa-network-wired"></i> Active Pipeline: Sockets Loopback</span>
+                                        <span class="badge badge-cyan">CHANNEL ENABLED</span>
+                                    </div>
+                                    <div class="conduit-pipe">
+                                        <div class="conduit-pulse" id="conduit-pulse"></div>
+                                        <div class="conduit-packet" id="conduit-packet">
+                                            <i class="fa-solid fa-vault"></i>
+                                            <span id="conduit-packet-text">PAYLOAD</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Bottom Console Logger -->
+                        <div class="glass-card runtime-console">
+                            <div class="card-header">
+                                <h3><i class="fa-solid fa-terminal text-yellow"></i> Privacy-Enabled System Logs (privacy_audit_trail.txt)</h3>
+                                <button class="btn btn-secondary btn-sm" onclick="clearSimLogs()"><i class="fa-solid fa-trash-can"></i> Clear Logs</button>
+                            </div>
+                            <div class="console-box" id="sim-console">
+                                <div class="console-line system"><span class="c-time">[14:25:32]</span> [SYSTEM] Privacy Governance Hub initialized. Encryption defaults set to AES-256-CBC.</div>
+                                <div class="console-line system"><span class="c-time">[14:25:32]</span> [SYSTEM] DPDPA and GDPR compliance policies mapped to socket, pipe, and shared memory drivers.</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- PANE 3: DSR Portal -->
+            <section id="pane-dsr" class="pane-content">
+                <div class="dsr-layout">
+                    <!-- Left: Request Form -->
+                    <div class="glass-card dsr-form-card">
+                        <h3><i class="fa-solid fa-user-shield text-cyan"></i> DSR Request Desk</h3>
+                        <p class="card-desc">GDPR & DPDPA authorize individuals to execute rights on their data. Submit a request to perform automated actions across all system IPC logs.</p>
+                        
+                        <div class="input-block">
+                            <label class="control-label" for="dsr-subject-select">Select Data Subject</label>
+                            <select id="dsr-subject-select" class="select-field">
+                                <!-- Populated dynamically -->
+                            </select>
+                        </div>
+
+                        <div class="input-block">
+                            <label class="control-label" for="dsr-type-select">Request Type</label>
+                            <select id="dsr-type-select" class="select-field">
+                                <option value="Access">Right of Access (Article 15 DSAR)</option>
+                                <option value="Export">Right to Portability (Article 20 Data Export)</option>
+                                <option value="Correction">Right to Rectification (Article 16 Correction)</option>
+                                <option value="Erasure">Right to Erasure / Forgotten (Article 17 Erasure)</option>
+                            </select>
+                        </div>
+
+                        <div class="input-block hidden" id="dsr-correction-fields">
+                            <label class="control-label" for="dsr-corrected-text">Corrected Name / Info</label>
+                            <input type="text" id="dsr-corrected-text" class="input-field" placeholder="E.g., Johnathan Doe">
+                        </div>
+
+                        <button class="btn btn-primary btn-block" onclick="submitDsrRequest()"><i class="fa-solid fa-circle-check"></i> Execute DSR Operation</button>
+                    </div>
+
+                    <!-- Right: DSR Execution Output Console -->
+                    <div class="glass-card dsr-output-card">
+                        <h3><i class="fa-solid fa-microchip-asin text-pink"></i> DSR Execution Console</h3>
+                        <p class="card-desc">Real-time log tracing of search, extract, replacement, or deletion sweeps across the data stack.</p>
+                        <div class="dsr-execution-box" id="dsr-exec-box">
+                            <div class="dsr-terminal-line text-muted">DSR desk is ready. Select a subject and execute a request.</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- PANE 4: Compliance & Info -->
+            <section id="pane-compliance" class="pane-content">
+                <!-- Architecture Section -->
+                <div class="glass-card mb-6">
+                    <h3><i class="fa-solid fa-sitemap text-cyan"></i> Privacy-by-Design System Architecture</h3>
+                    <p class="card-desc">Below is the data processing flow showing the logical integration of Security (AES/RSA/SHA) and Privacy (RBAC/Consent/Minimization) layers in process communication.</p>
+                    
+                    <div class="architecture-diagram-container">
+                        <!-- Custom CSS/HTML Flow Diagram -->
+                        <div class="arch-diagram">
+                            <div class="arch-box box-blue">
+                                <i class="fa-solid fa-computer"></i>
+                                <h5>Process A (Sender)</h5>
+                                <p>Authenticates via RSA-2048</p>
+                            </div>
+                            <div class="arch-connector"><i class="fa-solid fa-arrow-right-long"></i></div>
+                            <div class="arch-box box-purple">
+                                <i class="fa-solid fa-user-lock"></i>
+                                <h5>Privacy Layer</h5>
+                                <p>Checks Consent & Minimized Fields</p>
+                            </div>
+                            <div class="arch-connector"><i class="fa-solid fa-arrow-right-long"></i></div>
+                            <div class="arch-box box-emerald">
+                                <i class="fa-solid fa-key"></i>
+                                <h5>Crypto Layer</h5>
+                                <p>AES-256-CBC & SHA-256 Sign</p>
+                            </div>
+                            <div class="arch-connector"><i class="fa-solid fa-arrow-right-long"></i></div>
+                            <div class="arch-box box-yellow">
+                                <i class="fa-solid fa-memory"></i>
+                                <h5>IPC Channel</h5>
+                                <p>SHM / Pipes / Sockets</p>
+                            </div>
+                            <div class="arch-connector"><i class="fa-solid fa-arrow-right-long"></i></div>
+                            <div class="arch-box box-blue">
+                                <i class="fa-solid fa-server"></i>
+                                <h5>Process B (Receiver)</h5>
+                                <p>Decrypts & Authenticates Signature</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="compliance-tabs-grid">
+                    <!-- Left: GDPR Compliance Matrix -->
+                    <div class="glass-card">
+                        <h3><i class="fa-brands fa-eu text-yellow"></i> GDPR Compliance Mapping</h3>
+                        <p class="card-desc">How our framework addresses European Union General Data Protection Regulation requirements during inter-process data operations:</p>
+                        
+                        <div class="compliance-list">
+                            <div class="comp-list-item">
+                                <strong>Article 5(1)(c) - Data Minimization</strong>
+                                <p>Payload classification checks automatically sanitize or mask personal data (PII) like email addresses unless Process B has Admin role clearance.</p>
+                            </div>
+                            <div class="comp-list-item">
+                                <strong>Article 17 - Right to Erasure</strong>
+                                <p>Erasing a subject ID triggers a memory sweep that updates active shared memory variables and truncates trace records from the audit database.</p>
+                            </div>
+                            <div class="comp-list-item">
+                                <strong>Article 25 - Privacy by Design & Default</strong>
+                                <p>The system enforces opt-in consent verification defaults. Communication is blocked if a Subject ID record cannot be verified or has revoked permission.</p>
+                            </div>
+                            <div class="comp-list-item">
+                                <strong>Article 32 - Security of Processing</strong>
+                                <p>Inter-process payloads are encrypted via AES-256-CBC with SHA-256 checksums verifying packet data integrity against local sniffing attempts.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right: DPDPA Compliance Matrix -->
+                    <div class="glass-card">
+                        <h3><i class="fa-solid fa-scale-balanced text-cyan"></i> DPDPA (India) Compliance Mapping</h3>
+                        <p class="card-desc">How the framework enforces compliance with the Digital Personal Data Protection Act, 2023:</p>
+                        
+                        <div class="compliance-list">
+                            <div class="comp-list-item">
+                                <strong>Section 6 - Consent Verification</strong>
+                                <p>A central Consent Management Registry blocks communications containing non-consenting subject identifiers, raising instant Privacy Incident warnings.</p>
+                            </div>
+                            <div class="comp-list-item">
+                                <strong>Section 8 - Security Safeguards</strong>
+                                <p>Native pipe handle restrictions and RSA-2048 identity verification prevent process spoofing and unauthorized read hooks on Windows and Linux endpoints.</p>
+                            </div>
+                            <div class="comp-list-item">
+                                <strong>Section 12 - Data Subject Rights</strong>
+                                <p>DSR interfaces allow subjects to review processing history (Access), export activity logs (JSON), update details (Correction), and delete profiles (Erasure).</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Demandbase Case Study Section -->
+                <div class="glass-card mt-6">
+                    <h3><i class="fa-solid fa-industry text-emerald"></i> Real-World Use Case: B2B Account Intelligence (Demandbase Alignment)</h3>
+                    <p class="card-desc">In large-scale B2B marketing platforms like Demandbase, vast amounts of Account and Intent data flow between crawlers, scoring models, and targeting engines.</p>
+                    <div class="use-case-text">
+                        <p>Our **Secure IPC Privacy Framework** represents a crucial infrastructure safeguard for this flow:</p>
+                        <ul>
+                            <li><strong>Scenario</strong>: Process A (Intent Scoring Engine) wants to share a list of accounts that have searched for specific B2B topics with Process B (Outreach Automation Process). This list contains sensitive personal fields (contacts, emails).</li>
+                            <li><strong>Consent Gate</strong>: Process A attempts to pipe this information. The framework halts serialization, checks the central Consent Registry for the contacts, and filters out non-consenting users.</li>
+                            <li><strong>Data Minimization</strong>: Since Process B only needs corporate accounts, the Data Minimization filter detects personal emails in the payload and masks them to <code>[PII_MASKED]</code>.</li>
+                            <li><strong>Secure Transit</strong>: The resulting minimized payload is encrypted using AES-256-CBC, signed with Process A's private key, and pushed through a local Named Pipe.</li>
+                            <li><strong>Compliance Auditing</strong>: The entire transaction is logged as a success with SHA-256 checksums, creating a comprehensive audit trail for regulators.</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+            
+        </main>
+    </div>
+
+    <!-- Custom Script -->
+    <script src="index.js"></script>
+</body>
+</html>
