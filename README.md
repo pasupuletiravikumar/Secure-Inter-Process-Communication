@@ -1,5 +1,8 @@
 # **Secure Inter-Process Communication (IPC) Framework & Privacy Governance Hub**
 
+[![Deploy with Vercel](https://vercel.com/button)](https://web-sigma-flame-82.vercel.app)
+**Live Demo:** [https://web-sigma-flame-82.vercel.app](https://web-sigma-flame-82.vercel.app)
+
 A cybersecurity-focused platform designed to secure local communication between system processes using **AES-256-CBC encryption, RSA-2048 client authentication, SHA-256 data integrity verification, Sockets, Named Pipes, Shared Memory, and Message Queues**. 
 
 This repository has been extended to integrate a **Privacy Governance Layer** tailored for B2B data flow audit operations (such as in Account-Based Marketing at Demandbase). The governance layer enforces runtime compliance with GDPR and DPDPA frameworks directly at the process serialization layer using Role-Based Access Control (RBAC), a central Consent Management Registry, and dynamic Data Minimization filters.
